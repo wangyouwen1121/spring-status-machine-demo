@@ -1,7 +1,7 @@
 package guru.springframework.msscssm.config;
 
-import guru.springframework.msscssm.domain.PaymentEvent;
-import guru.springframework.msscssm.domain.PaymentState;
+import guru.springframework.msscssm.domain.JobEvents;
+import guru.springframework.msscssm.domain.JobState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,27 +14,24 @@ import java.util.UUID;
 class StateMachineConfigTest {
 
     @Autowired
-    StateMachineFactory<PaymentState, PaymentEvent> factory;
+    StateMachineFactory<JobState, JobEvents> factory;
 
     @Test
     void testNewStateMachine() {
-        StateMachine<PaymentState, PaymentEvent> sm = factory.getStateMachine(UUID.randomUUID());
+        StateMachine<JobState, JobEvents> sm = factory.getStateMachine(UUID.randomUUID());
 
         sm.start();
 
         System.out.println(sm.getState().toString());
 
-        sm.sendEvent(PaymentEvent.PRE_AUTHORIZE);
+        sm.sendEvent(JobEvents.START_JOB);
 
         System.out.println(sm.getState().toString());
 
-        sm.sendEvent(PaymentEvent.PRE_AUTH_APPROVED);
+        sm.sendEvent(JobEvents.STOP_JOB);
 
         System.out.println(sm.getState().toString());
 
-        sm.sendEvent(PaymentEvent.PRE_AUTH_DECLINED);
-
-        System.out.println(sm.getState().toString());
 
     }
 }

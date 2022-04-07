@@ -1,7 +1,7 @@
 package guru.springframework.msscssm.config;
 
-import guru.springframework.msscssm.domain.PaymentEvent;
-import guru.springframework.msscssm.domain.PaymentState;
+import guru.springframework.msscssm.domain.JobEvents;
+import guru.springframework.msscssm.domain.JobState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -17,66 +17,48 @@ import org.springframework.statemachine.state.State;
 
 import java.util.EnumSet;
 
-/**
- * Created by jt on 2019-07-23.
- */
+
 @Slf4j
 @RequiredArgsConstructor
 @EnableStateMachineFactory
 @Configuration
-public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentState, PaymentEvent> {
+public class StateMachineConfig extends StateMachineConfigurerAdapter<JobState, JobEvents> {
 
-    private final Action<PaymentState, PaymentEvent> preAuthAction;
-    private final Action<PaymentState, PaymentEvent> authAction;
-    private final Guard<PaymentState, PaymentEvent> paymentIdGuard;
-    private final Action<PaymentState, PaymentEvent> preAuthApprovedAction;
-    private final Action<PaymentState, PaymentEvent> preAuthDeclinedAction;
-    private final Action<PaymentState, PaymentEvent> authApprovedAction;
-    private final Action<PaymentState, PaymentEvent> authDeclinedAction;
+    private final Action<JobState, JobEvents> createJobAction;
+    private final Action<JobState, JobEvents> stopJobAction;
+    private final Action<JobState, JobEvents> startJobAction;
 
     @Override
-    public void configure(StateMachineStateConfigurer<PaymentState, PaymentEvent> states) throws Exception {
+    public void configure(StateMachineStateConfigurer<JobState, JobEvents> states) throws Exception {
         states.withStates()
-                .initial(PaymentState.NEW)
-                .states(EnumSet.allOf(PaymentState.class))
-                .end(PaymentState.AUTH)
-                .end(PaymentState.PRE_AUTH_ERROR)
-                .end(PaymentState.AUTH_ERROR);
+                .initial(JobState.STOPPED)
+                .states(EnumSet.allOf(JobState.class))
+                .end(JobState.STARTED)
+                .end(JobState.STOPPED);
     }
 
     @Override
-    public void configure(StateMachineTransitionConfigurer<PaymentState, PaymentEvent> transitions) throws Exception {
-        transitions.withExternal().source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvent.PRE_AUTHORIZE)
-                    .action(preAuthAction).guard(paymentIdGuard)
+    public void configure(StateMachineTransitionConfigurer<JobState, JobEvents> transitions) throws Exception {
+        transitions.withExternal().source(JobState.STOPPED).target(JobState.STOPPED).event(JobEvents.CREATE_JOB)
+                    .action(createJobAction)
                 .and()
-                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH).event(PaymentEvent.PRE_AUTH_APPROVED)
-                    .action(preAuthApprovedAction)
+                .withExternal().source(JobState.STOPPED).target(JobState.STARTED).event(JobEvents.START_JOB)
+                    .action(startJobAction)
                 .and()
-                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH_ERROR).event(PaymentEvent.PRE_AUTH_DECLINED)
-                    .action(preAuthDeclinedAction)
-                //preauth to auth
-                .and()
-                .withExternal().source(PaymentState.PRE_AUTH).target(PaymentState.PRE_AUTH).event(PaymentEvent.AUTHORIZE)
-                    .action(authAction)
-                .and()
-                .withExternal().source(PaymentState.PRE_AUTH).target(PaymentState.AUTH).event(PaymentEvent.AUTH_APPROVED)
-                    .action(authApprovedAction)
-                .and()
-                .withExternal().source(PaymentState.PRE_AUTH).target(PaymentState.AUTH_ERROR).event(PaymentEvent.AUTH_DECLINED)
-                    .action(authDeclinedAction);
+                .withExternal().source(JobState.STARTED).target(JobState.STOPPED).event(JobEvents.STOP_JOB)
+                    .action(stopJobAction);
     }
 
     @Override
-    public void configure(StateMachineConfigurationConfigurer<PaymentState, PaymentEvent> config) throws Exception {
-        StateMachineListenerAdapter<PaymentState, PaymentEvent> adapter = new StateMachineListenerAdapter<>(){
+    public void configure(StateMachineConfigurationConfigurer<JobState, JobEvents> config) throws Exception {
+        StateMachineListenerAdapter<JobState, JobEvents> adapter = new StateMachineListenerAdapter<JobState, JobEvents>(){
             @Override
-            public void stateChanged(State<PaymentState, PaymentEvent> from, State<PaymentState, PaymentEvent> to) {
+            public void stateChanged(State<JobState, JobEvents> from, State<JobState, JobEvents> to) {
                 log.info(String.format("stateChanged(from: %s, to: %s)", from, to));
             }
         };
 
-        config.withConfiguration()
-                .listener(adapter);
+        config.withConfiguration().listener(adapter);
     }
 
 //    public Guard<PaymentState, PaymentEvent> paymentIdGuard(){

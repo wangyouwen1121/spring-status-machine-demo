@@ -1,18 +1,16 @@
 package guru.springframework.msscssm.config.actions;
 
-import guru.springframework.msscssm.domain.PaymentEvent;
-import guru.springframework.msscssm.domain.PaymentState;
+import guru.springframework.msscssm.domain.JobEvents;
+import guru.springframework.msscssm.domain.JobState;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by jt on 2019-08-18.
- */
+
 @Component
-public class AuthApprovedAction implements Action<PaymentState, PaymentEvent> {
+public class StopJobAction implements Action<JobState, JobEvents> {
     @Override
-    public void execute(StateContext<PaymentState, PaymentEvent> context) {
+    public void execute(StateContext<JobState, JobEvents> context) {
         System.out.println("Sending Notification of Auth APPROVED");
     }
 }
