@@ -1,7 +1,7 @@
 package guru.springframework.msscssm.config;
 
-import guru.springframework.msscssm.domain.JobEvents;
-import guru.springframework.msscssm.domain.JobState;
+import guru.springframework.msscssm.domain.job.JobEvents;
+import guru.springframework.msscssm.domain.job.JobState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,7 +11,7 @@ import org.springframework.statemachine.config.StateMachineFactory;
 import java.util.UUID;
 
 @SpringBootTest
-class StateMachineConfigTest {
+class JobStateMachineConfigBuilderTest {
 
     @Autowired
     StateMachineFactory<JobState, JobEvents> factory;
